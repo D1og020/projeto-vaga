@@ -5,6 +5,15 @@
 include 'database.php';// Conexão com o banco
 
 try {
+
+    // Criar tabela 'usuarios'
+    $pdo->exec("CREATE TABLE IF NOT EXISTS usuarios (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL
+    );
+    ");
+
     // Criar tabela 'clientes'
     $pdo->exec("CREATE TABLE IF NOT EXISTS clientes (
         id INT AUTO_INCREMENT PRIMARY KEY,
