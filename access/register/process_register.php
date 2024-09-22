@@ -5,7 +5,7 @@ $username = $_POST['username'];
 $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
 // Verificar se o usuário já existe
-$stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+$stmt = $pdo->prepare("SELECT * FROM usuarios WHERE username = ?");
 $stmt->execute([$username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

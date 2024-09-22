@@ -24,6 +24,6 @@ if (isset($_SESSION['username'])) {
         <button type="submit">Entrar</button>
     </form>
 
-    <p>Não tem uma conta? <a href="register.php">Cadastre-se aqui</a></p>
+    <p>Não tem uma conta? <a href="../register/register.php">Cadastre-se aqui</a></p>
 </body>
 </html>
