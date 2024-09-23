@@ -23,7 +23,7 @@ if (isset($_GET['delete_id'])) {
     }
 }
 
-// Buscar todos os produtos cadastrados
+// Buscar todos os produtos cadastrados, incluindo a quantidade
 $stmt = $pdo->query("SELECT * FROM produtos");
 $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -56,6 +56,7 @@ $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <th>ID</th>
             <th>Nome</th>
             <th>Preço</th>
+            <th>Quantidade</th> <!-- Nova coluna para a quantidade -->
             <th>Ações</th>
         </tr>
     </thead>
@@ -65,6 +66,7 @@ $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <td><?= $produto['id'] ?></td>
                 <td><?= htmlspecialchars($produto['nome']) ?></td>
                 <td>R$ <?= number_format($produto['preco'], 2, ',', '.') ?></td>
+                <td><?= $produto['quantidade'] ?></td> <!-- Exibir a quantidade do produto -->
                 <td>
                     <a href="edit_product.php?id=<?= $produto['id'] ?>">Editar</a>
                     <a href="?delete_id=<?= $produto['id'] ?>" onclick="return confirm('Tem certeza que deseja excluir este produto?');">Excluir</a>

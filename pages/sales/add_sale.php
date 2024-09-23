@@ -13,24 +13,39 @@ $clientes = $stmtClientes->fetchAll(PDO::FETCH_ASSOC);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cliente_id = !empty($_POST['cliente_id']) ? $_POST['cliente_id'] : null;
     $produtos_venda = $_POST['produtos'];
+    $quantidades = $_POST['quantidades'];
     $forma_pagamento = $_POST['forma_pagamento'];
     $valor_total = $_POST['valor_total'];
     $parcelas = $_POST['parcelas'];
     $datas_vencimento = $_POST['datas_vencimento'];
 
     // Inserir a venda
-
-    // converto a parcela para int
-    $parcela_convert = intval($parcelas);
-    
+    $parcela_convert = intval($_POST['num_parcelas']);
     $stmt = $pdo->prepare("INSERT INTO vendas (cliente_id, forma_pagamento, valor_total, quantidade_parcelas) VALUES (?, ?, ?, ?)");
     $stmt->execute([$cliente_id, $forma_pagamento, $valor_total, $parcela_convert]);
     $venda_id = $pdo->lastInsertId();
 
     // Inserir os produtos da venda
     foreach ($produtos_venda as $produto_id) {
-        $stmtProdutoVenda = $pdo->prepare("INSERT INTO venda_produtos (venda_id, produto_id) VALUES (?, ?)");
-        $stmtProdutoVenda->execute([$venda_id, $produto_id]);
+        $quantidade = $quantidades[$produto_id];
+
+        // Atualizar o estoque do produto
+        $stmtEstoque = $pdo->prepare("SELECT quantidade FROM produtos WHERE id = ?");
+        $stmtEstoque->execute([$produto_id]);
+        $produtoEstoque = $stmtEstoque->fetch(PDO::FETCH_ASSOC);
+
+        if ($produtoEstoque['quantidade'] < $quantidade) {
+            die("Erro: a quantidade solicitada do produto {$produto_id} excede o estoque disponível.");
+        }
+
+        // Inserir na tabela venda_produtos
+        $stmtProdutoVenda = $pdo->prepare("INSERT INTO venda_produtos (venda_id, produto_id, quantidade) VALUES (?, ?, ?)");
+        $stmtProdutoVenda->execute([$venda_id, $produto_id, $quantidade]);
+
+        // Atualizar o estoque no banco de dados
+        $novoEstoque = $produtoEstoque['quantidade'] - $quantidade;
+        $stmtUpdateEstoque = $pdo->prepare("UPDATE produtos SET quantidade = ? WHERE id = ?");
+        $stmtUpdateEstoque->execute([$novoEstoque, $produto_id]);
     }
 
     // Inserir parcelas
@@ -40,15 +55,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmtParcela->execute([$venda_id, $data_vencimento, $parcela_valor]);
     }
 
-    // echo "<p>Venda registrada com sucesso!</p>";
+    // Redirecionar após a venda
+    header("Location: ../sales/add_sale.php");
 }
 ?>
+
 <div class="text-center">
     <h2>Registrar Venda</h2>
 
     <form method="POST" id="saleForm">
         
-        <!-- pego meu cliente -->
+        <!-- Cliente -->
         <label>Cliente: </label>
         <select name="cliente_id" required>
             <option value="">Selecione um cliente</option>
@@ -57,15 +74,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endforeach; ?>
         </select><br>
         <br>
-        <!-- pego os itens de compra -->
-        <label>Itens da Venda (Selecione os produtos):</label><br>
-        <select name="produtos[]" id="produtos" multiple required>
+        
+        <!-- Produtos da venda com quantidades e estoque disponível -->
+        <label>Itens da Venda (Selecione os produtos e quantidades):</label><br>
+        <div id="produtosContainer">
             <?php foreach ($produtos as $produto): ?>
-                <option value="<?= $produto['id'] ?>" data-preco="<?= $produto['preco'] ?>"><?= $produto['nome'] ?> - R$ <?= $produto['preco'] ?></option>
+                <div>
+                    <input type="checkbox" name="produtos[<?= $produto['id'] ?>]" value="<?= $produto['id'] ?>" data-preco="<?= $produto['preco'] ?>" data-estoque="<?= $produto['quantidade'] ?>" class="produto-checkbox">
+                    <?= $produto['nome'] ?> - R$ <?= number_format($produto['preco'], 2, ',', '.') ?> (Estoque: <?= $produto['quantidade'] ?>)
+                    <input type="number" name="quantidades[<?= $produto['id'] ?>]" value="1" min="1" max="<?= $produto['quantidade'] ?>" class="produto-quantidade" style="width: 50px;" disabled>
+                </div>
             <?php endforeach; ?>
-        </select><br>
+        </div>
         <br>
-        <!-- pego a forma de pagamento -->
+        
+        <!-- Forma de pagamento -->
         <label>Forma de Pagamento:</label>
         <select name="forma_pagamento" required>
             <option value="Cartão">Cartão</option>
@@ -73,9 +96,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <option value="Boleto">Boleto</option>
         </select><br>
         <br>   
+        
+        <!-- Valor Total -->
         <label>Valor Total:</label>
         <input type="number" name="valor_total" id="valor_total" readonly><br>
-        <br>       
+        <br>
+        
+        <!-- Parcelas -->
         <label>Número de Parcelas:</label>
         <input type="number" id="num_parcelas" name="num_parcelas" min="1" value="1" required><br>
          
@@ -84,32 +111,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- As parcelas e datas de vencimento serão geradas aqui -->
         </div>
         <br>
+        
         <button type="submit" class="btn btn-success">Cadastrar Venda</button>
     </form>
 </div>
-<script>
-// Função para calcular o valor total com base nos produtos selecionados
 
-// pego as variaveis
-const produtosSelect = document.getElementById('produtos');
+<script>
+// Referências a elementos do DOM
+const produtosContainer = document.getElementById('produtosContainer');
 const valorTotalInput = document.getElementById('valor_total');
 const numParcelasInput = document.getElementById('num_parcelas');
 const parcelasContainer = document.getElementById('parcelasContainer');
 
-// Função para atualizar o valor total
+// Função para atualizar o valor total com base nos produtos selecionados e suas quantidades
 function atualizarValorTotal() {
     let total = 0;
-    Array.from(produtosSelect.selectedOptions).forEach(option => {
-        total += parseFloat(option.getAttribute('data-preco'));
+
+    // Percorre cada checkbox de produto e, se estiver selecionado, adiciona seu preço ao total multiplicado pela quantidade
+    const checkboxes = document.querySelectorAll('.produto-checkbox');
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            const quantidadeInput = checkbox.closest('div').querySelector('.produto-quantidade');
+            const quantidade = parseInt(quantidadeInput.value);
+            const preco = parseFloat(checkbox.getAttribute('data-preco'));
+            total += quantidade * preco;
+        }
     });
+
     valorTotalInput.value = total.toFixed(2);
     gerarParcelas();
 }
 
-// função para gerar as parcelas personalidas
+// Função para gerar as parcelas personalizadas
 function gerarParcelas() {
-
-    // capturo os variaveis
     const numParcelas = parseInt(numParcelasInput.value);
     const valorTotal = parseFloat(valorTotalInput.value);
     parcelasContainer.innerHTML = '';
@@ -141,11 +175,25 @@ function gerarParcelas() {
     }
 }
 
-// Atualizar o valor total e as parcelas ao selecionar produtos ou mudar o número de parcelas
-produtosSelect.addEventListener('change', atualizarValorTotal);
+// Verificar estoque e controlar o campo de quantidade
+document.querySelectorAll('.produto-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const quantidadeInput = this.closest('div').querySelector('.produto-quantidade');
+        quantidadeInput.disabled = !this.checked;
+        atualizarValorTotal();
+    });
+});
+
+// Atualizar o valor total ao alterar a quantidade
+document.querySelectorAll('.produto-quantidade').forEach(input => {
+    input.addEventListener('input', atualizarValorTotal);
+});
+
+// Gerar parcelas ao mudar o número de parcelas
 numParcelasInput.addEventListener('input', gerarParcelas);
 
-atualizarValorTotal(); // Atualiza ao carregar a página
+// Atualizar o valor total ao carregar a página
+atualizarValorTotal();
 </script>
 
 <?php include '../../templates/footer.php'; ?>

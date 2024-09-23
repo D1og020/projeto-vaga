@@ -24,10 +24,11 @@ if (!$produto) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nome = $_POST['nome'];
     $preco = $_POST['preco'];
+    $quantidade = intval($_POST['quantidade']);  // Pegar a quantidade como inteiro
 
     // Atualizar o produto no banco de dados
-    $stmtUpdate = $pdo->prepare("UPDATE produtos SET nome = ?, preco = ? WHERE id = ?");
-    $stmtUpdate->execute([$nome, $preco, $product_id]);
+    $stmtUpdate = $pdo->prepare("UPDATE produtos SET nome = ?, preco = ?, quantidade = ? WHERE id = ?");
+    $stmtUpdate->execute([$nome, $preco, $quantidade, $product_id]);
 
     header("Location: ../product/list_product.php"); // Redireciona de volta à lista após a atualização
     exit();
@@ -42,6 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <br><br>
         <label>Preço do Produto:</label>
         <input type="number" step="0.01" name="preco" value="<?= htmlspecialchars($produto['preco']) ?>" required>
+        <br><br>
+        <label>Quantidade do Produto:</label>
+        <input type="number" name="quantidade" value="<?= htmlspecialchars($produto['quantidade']) ?>" required>
         <br><br>
         <button type="submit" class="btn btn-success">Atualizar Produto</button>
     </form>

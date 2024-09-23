@@ -21,6 +21,12 @@ function getProdutosVenda($pdo, $venda_id) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getTotalVenda($pdo, $venda_id) {
+    $stmt = $pdo->prepare("SELECT SUM(valor) FROM parcelas WHERE venda_id = ?");
+    $stmt->execute([$venda_id]);
+    return $stmt->fetchColumn() ?: 0; // Retorna 0 se não houver parcelas
+}
+
 // Lógica de exclusão
 if (isset($_GET['delete_id'])) {
     $delete_id = $_GET['delete_id'];
@@ -72,19 +78,15 @@ if (isset($_GET['delete_id'])) {
                 
                 <td>
                     <?php
-
-                    // pego os produtos
+                    // Pego os produtos
                     $produtos = getProdutosVenda($pdo, $venda['id']);
-                    $total_venda = 0; // Variável para somar o total da venda
-
                     foreach ($produtos as $produto) {
                         echo $produto['nome'] . ' - R$ ' . number_format($produto['preco'], 2, ',', '.') . '<br>';
-                        $total_venda += $produto['preco'];
                     }
                     ?>
                 </td>
                 
-                <td>R$ <?= number_format($total_venda, 2, ',', '.') ?></td>
+                <td>R$ <?= number_format(getTotalVenda($pdo, $venda['id']), 2, ',', '.') ?></td>
                 
                 <td>
                     <a href="edit_sale.php?id=<?= $venda['id'] ?>">Editar</a>

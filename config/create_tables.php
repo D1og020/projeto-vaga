@@ -25,7 +25,8 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS produtos (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nome VARCHAR(255) NOT NULL,
-        preco DECIMAL(10, 2) NOT NULL
+        preco DECIMAL(10, 2) NOT NULL,
+        quantidade INT NOT NULL DEFAULT 1 
     )");
 
     // Criar tabela 'vendas'
@@ -42,10 +43,11 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS venda_produtos (
         venda_id INT NOT NULL,
         produto_id INT NOT NULL,
+        quantidade INT NOT NULL,
         PRIMARY KEY (venda_id, produto_id),
         FOREIGN KEY (venda_id) REFERENCES vendas(id) ON DELETE CASCADE,
         FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
-    )");
+    )");    
 
     // Criar tabela 'parcelas'
     $pdo->exec("CREATE TABLE IF NOT EXISTS parcelas (
