@@ -46,21 +46,6 @@
                 <li><a class="dropdown-item" href="/projeto-vaga/pages/sales/list_sales.php">Listas Vendas</a></li>
             </ul>
         </li>
-        <!-- RELATÓRIO -->
-         <!-- 
-        PERIODOS(MESES, SEMANAS, DIAS)
-         VISUALIZAÇÃO DOS Itens
-         GERAR RELATÓRIO 
-         -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Relatórios
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="/projeto-vaga/pages/sales/add_sale.php">Registrar Vendas</a></li>
-                <li><a class="dropdown-item" href="/projeto-vaga/pages/sales/list_sales.php">Listas Vendas</a></li>
-            </ul>
-        </li>
         <li class="nav-item">
             <a class="nav-link active" href="/projeto-vaga/access/logout.php">Sair</a>
         </li>

@@ -2,18 +2,30 @@
 include '../../templates/header.php';
 include '../../config/database.php';
 
-// Buscar todos os produtos cadastrados
-$stmt = $pdo->query("SELECT * FROM produtos");
-$produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 // Lógica de exclusão
 if (isset($_GET['delete_id'])) {
     $delete_id = $_GET['delete_id'];
-    $stmtDelete = $pdo->prepare("DELETE FROM produtos WHERE id = ?");
-    $stmtDelete->execute([$delete_id]);
-    header("Location: list_products.php");
-    exit();
+    
+    // Verificar se o produto existe antes de tentar excluir
+    $stmtCheck = $pdo->prepare("SELECT id FROM produtos WHERE id = ?");
+    $stmtCheck->execute([$delete_id]);
+    
+    if ($stmtCheck->rowCount() > 0) {
+        // Se o produto existe, excluir
+        $stmtDelete = $pdo->prepare("DELETE FROM produtos WHERE id = ?");
+        $stmtDelete->execute([$delete_id]);
+
+        // Redirecionar para a lista de produtos após a exclusão
+        header("Location: /projeto-vaga/pages/product/list_product.php");
+        exit();
+    } else {
+        echo "<p>Produto não encontrado.</p>";
+    }
 }
+
+// Buscar todos os produtos cadastrados
+$stmt = $pdo->query("SELECT * FROM produtos");
+$produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
@@ -37,6 +49,7 @@ if (isset($_GET['delete_id'])) {
 <div class="text-center">
     <h2>Listagem de Produtos</h2>
 </div>
+
 <table border="1" style="margin: auto;">
     <thead>
         <tr>

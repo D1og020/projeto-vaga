@@ -14,6 +14,7 @@ if ($user && password_verify($password, $user['password'])) {
     $_SESSION['username'] = $username;
     header("Location: ../../index.php");
 } else {
+    header("Location: login.php");
     echo "<p>Usuário ou senha inválidos.</p>";
     echo "<a href='login.php'>Tentar novamente</a>";
 }

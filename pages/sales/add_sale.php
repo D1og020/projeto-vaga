@@ -19,8 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $datas_vencimento = $_POST['datas_vencimento'];
 
     // Inserir a venda
-    $stmt = $pdo->prepare("INSERT INTO vendas (cliente_id, forma_pagamento, valor_total) VALUES (?, ?, ?)");
-    $stmt->execute([$cliente_id, $forma_pagamento, $valor_total]);
+
+    // converto a parcela para int
+    $parcela_convert = intval($parcelas);
+    
+    $stmt = $pdo->prepare("INSERT INTO vendas (cliente_id, forma_pagamento, valor_total, quantidade_parcelas) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$cliente_id, $forma_pagamento, $valor_total, $parcela_convert]);
     $venda_id = $pdo->lastInsertId();
 
     // Inserir os produtos da venda
@@ -43,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <h2>Registrar Venda</h2>
 
     <form method="POST" id="saleForm">
+        
+        <!-- pego meu cliente -->
         <label>Cliente: </label>
         <select name="cliente_id" required>
             <option value="">Selecione um cliente</option>
@@ -51,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endforeach; ?>
         </select><br>
         <br>
+        <!-- pego os itens de compra -->
         <label>Itens da Venda (Selecione os produtos):</label><br>
         <select name="produtos[]" id="produtos" multiple required>
             <?php foreach ($produtos as $produto): ?>
@@ -58,13 +65,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endforeach; ?>
         </select><br>
         <br>
+        <!-- pego a forma de pagamento -->
         <label>Forma de Pagamento:</label>
         <select name="forma_pagamento" required>
             <option value="Cartão">Cartão</option>
             <option value="Dinheiro">Dinheiro</option>
             <option value="Boleto">Boleto</option>
         </select><br>
-        <br>       
+        <br>   
         <label>Valor Total:</label>
         <input type="number" name="valor_total" id="valor_total" readonly><br>
         <br>       
@@ -81,6 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 <script>
 // Função para calcular o valor total com base nos produtos selecionados
+
+// pego as variaveis
 const produtosSelect = document.getElementById('produtos');
 const valorTotalInput = document.getElementById('valor_total');
 const numParcelasInput = document.getElementById('num_parcelas');
@@ -96,7 +106,10 @@ function atualizarValorTotal() {
     gerarParcelas();
 }
 
+// função para gerar as parcelas personalidas
 function gerarParcelas() {
+
+    // capturo os variaveis
     const numParcelas = parseInt(numParcelasInput.value);
     const valorTotal = parseFloat(valorTotalInput.value);
     parcelasContainer.innerHTML = '';

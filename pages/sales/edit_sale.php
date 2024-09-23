@@ -97,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </select><br>
         <br>
         <label>Quantidade de Parcelas:</label>
+        <!-- htmlspecialchars — Converte caracteres especiais em entidades HTML -->
         <input type="number" name="quantidade_parcelas" value="<?= htmlspecialchars($venda['quantidade_parcelas']) ?>" min="1" required><br>
 
         <br>

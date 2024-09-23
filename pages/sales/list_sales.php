@@ -51,6 +51,7 @@ if (isset($_GET['delete_id'])) {
 <div class="text-center">
     <h2>Listagem de Vendas</h2>
 </div>
+<br>
 <table border="1" style="margin: auto;">
     <thead>
         <tr>
@@ -71,6 +72,8 @@ if (isset($_GET['delete_id'])) {
                 
                 <td>
                     <?php
+
+                    // pego os produtos
                     $produtos = getProdutosVenda($pdo, $venda['id']);
                     $total_venda = 0; // Variável para somar o total da venda
 

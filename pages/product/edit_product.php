@@ -1,14 +1,16 @@
 <?php
-include '../../templates/header.php';
 include '../../config/database.php';
+include '../../templates/header.php';
 
-// Obter o produto a ser editado
+// Verificar se o ID do produto foi passado na URL
 if (!isset($_GET['id'])) {
     header("Location: list_products.php");
     exit();
 }
 
 $product_id = $_GET['id'];
+
+// Buscar o produto para preencher o formulário
 $stmt = $pdo->prepare("SELECT * FROM produtos WHERE id = ?");
 $stmt->execute([$product_id]);
 $produto = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -27,25 +29,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmtUpdate = $pdo->prepare("UPDATE produtos SET nome = ?, preco = ? WHERE id = ?");
     $stmtUpdate->execute([$nome, $preco, $product_id]);
 
-    // Redirecionar de volta para a página de edição do produto
-    header("Location: edit_product.php?id=" . $product_id);
+    header("Location: ../product/list_product.php"); // Redireciona de volta à lista após a atualização
     exit();
 }
 ?>
 
 <div class="text-center">
     <h2>Editar Produto</h2>
-    <br>
     <form method="POST">
         <label>Nome do Produto:</label>
         <input type="text" name="nome" value="<?= htmlspecialchars($produto['nome']) ?>" required>
-        <br>
-        <br>
+        <br><br>
         <label>Preço do Produto:</label>
         <input type="number" step="0.01" name="preco" value="<?= htmlspecialchars($produto['preco']) ?>" required>
-        <br>
-        <br>
+        <br><br>
         <button type="submit" class="btn btn-success">Atualizar Produto</button>
     </form>
 </div>
+
 <?php include '../../templates/footer.php'; ?>
