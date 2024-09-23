@@ -24,14 +24,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-
-<div class="text-center">
-    <h2>Registrar Novo Usuário</h2>
-    <form method="POST">
-        <label>Usuário:</label>
-        <input type="text" name="username" required><br><br>
-        <label>Senha:</label>
-        <input type="password" name="password" required><br><br>
-        <button type="submit">Cadastrar</button>
-    </form>
-</div>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="../../assents/main.css">
+</head>
+<body>
+    <div class="page">
+        <form action="process_register.php" method="POST" class="formLogin">
+            <h2>Registrar Novo Usuário</h2>
+            <label>Usuário:</label>
+            <input type="text" name="username" required>
+            <label>Senha:</label>
+            <input type="password" name="password" required>
+            <input type="submit" value="Cadastrar" class="btn" />
+        </form>
+    </div>
+</body>
+</html>

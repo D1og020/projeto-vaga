@@ -13,17 +13,20 @@ if (isset($_SESSION['username'])) {
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <link rel="stylesheet" href="../../assents/main.css">
 </head>
 <body>
-    <h2>Login</h2>
-    <form action="process_login.php" method="POST">
-        <label>Usuário:</label>
-        <input type="text" name="username" required><br><br>
-        <label>Senha:</label>
-        <input type="password" name="password" required><br><br>
-        <button type="submit">Entrar</button>
-    </form>
-
-    <p>Não tem uma conta? <a href="../register/register.php">Cadastre-se aqui</a></p>
+     <div class="page">
+        <form action="process_login.php" method="POST" class="formLogin">
+            <h1>Login</h1>
+            <p>Digite os seus dados de acesso no campo abaixo.</p>
+            <label>Usuário:</label>
+            <input type="text" name="username" required>
+            <label>Senha:</label>
+            <input type="password" name="password" required>
+            <input type="submit" value="Acessar" class="btn" />
+            <p>Não tem uma conta? <a href="../register/register.php">Cadastre-se aqui</a></p>
+        </form>
+    </div>
 </body>
 </html>

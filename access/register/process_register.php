@@ -14,9 +14,9 @@ if ($user) {
     echo "<a href='register.php'>Tentar novamente</a>";
 } else {
     // Inserir novo usuário
-    $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO usuarios (username, password) VALUES (?, ?)");
     $stmt->execute([$username, $password]);
     
-    echo "<p>Usuário cadastrado com sucesso! <a href='login.php'>Faça login</a></p>";
+    echo "<p>Usuário cadastrado com sucesso! <a href='../login/login.php'>Faça login</a></p>";
 }
 ?>
