@@ -17,4 +17,5 @@ REFERENCIAS: Documentações(sites oficiais), entre outras fontes.
 
 2º Usei o xampp para poder executar meu projeto, executar dentro de xampp/htdocs.
 
-3º Ir até a URL http://localhost/projeto-vaga/access/login/login.php
+3º Ir até a URL http://localhost/{nome escolhido para a pasta}/access/login/login.php 
+  - Após trocar os "colchetes { }" pelo nome escolhido do arquivo, por favor remover os colchetes.
